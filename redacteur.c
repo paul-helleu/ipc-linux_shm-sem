@@ -1,14 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/sem.h>
 #include <unistd.h>
 
 int destructionZDC(int id);
 
 int main() {
-    key_t cle;
-    int shmid, i, j, etoile = 1;
+    key_t cle, cle2;
+    int shmid, semid, i, j, status, etoile = 1;
     char *pZDC = NULL;
 
     cle = ftok("/usr/include/err.h", 0);
@@ -22,7 +24,26 @@ int main() {
         }
     }
 
+    cle2 = ftok("usr/include/err.h", 1);
+    semid = semget(cle2, 1, IPC_CREAT | IPC_EXCL | 0600);
+
+    if(semid == -1) {
+        semid = semget(cle2, 1, IPC_EXCL);
+        if(semid == -1) {
+            destructionZDC(shmid);
+            perror("semget");
+            return EXIT_FAILURE;
+        }
+    }
+
     for(i = 0; i < 20; i++) {
+        // prendre
+        struct semnum *Param;
+        Param->val = 1;
+        Param->semid
+
+        shmctl(semid, 1, );
+
         pZDC = shmat(shmid, NULL, 0);
         if(pZDC == (char*)-1) {
             destructionZDC(shmid);
@@ -54,7 +75,11 @@ int main() {
             perror("shmdt");
             return EXIT_FAILURE;
         }
+        // vendre
     }
+
+    // edit sem
+    semctl(semid, 1, IPC_RMID);
 
     destructionZDC(shmid);
 
